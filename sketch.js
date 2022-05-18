@@ -2,10 +2,11 @@ let song;
 let analyzer;
 // texture for the particle
 let particle_texture = null;
-
+let songPlaying = false;
 // variable holding our particle system
 let ps = null;
-
+let button = document.getElementById("startSong");
+let color = 'r';
 function preload() {
   song = loadSound('Never Gonna Give You Up Original.mp3');
   particle_texture = loadImage("https://th.bing.com/th/id/R.4939a8d27601adf3dd652e5703b6f679?rik=6cBF6VHx0SM4wg&riu=http%3a%2f%2fstemkoski.github.io%2fThree.js%2fimages%2fsmokeparticle.png&ehk=VYe1xXAqA7%2fowyNNm%2fZjzm6fFzYq14hK7d1AC3skDfU%3d&risl=&pid=ImgRaw&r=0");
@@ -15,9 +16,11 @@ function setup() {
 
   //set the canvas size
   createCanvas(640, 360);
-  
-  song.play();
-  console.log("playing song")
+  // create a new Amplitude analyzer
+  analyzer = new p5.Amplitude();
+
+  // Patch the input to an volume analyzer
+  analyzer.setInput(song);
   // Create an Audio input
   mic = new p5.AudioIn();
 
@@ -32,11 +35,56 @@ function setup() {
   
 }
 
+function playSong() {
+  if (!songPlaying) {
+  song.play();
+  console.log('Playing Song hopefully');
+  songPlaying = true;
+  }
+}
+
+function stopSong() {
+  if (songPlaying) {
+    song.stop();
+    songPlaying = false;
+  }
+}
+
 function draw() {
-  background(0);
+
+  if(keyCode == 82) {
+    color = 'r';
+  }
+  if(keyCode == 71) {
+    color = 'g';
+  }
+  if(keyCode == 66) {
+    color = 'b';
+  }
+
+
+  console.log(keyCode + color);
+  let rms = analyzer.getLevel();
+  fill(127);
+  stroke(0);
+
+  // Draw an ellipse with size based on volume
+  ellipse(width / 2, height / 2, 10 + rms * 200, 10 + rms * 200);
+  background(255);
   let vol = mic.getLevel();
   //console.log(analyzer.getLevel());
-  background(vol*700, 0, 0)
+
+  if(color == 'r') {
+    background(vol*700, 0, 0)
+  }
+  if(color == 'g') {
+    background(0, vol*700, 0)
+  }
+  if(color == 'b') {
+    background(0, 0, vol*700)
+  }
+
+  
   let dx = map(mouseX, 0, width, -0.2, 0.2);
   let wind = createVector(dx, 0);
 
